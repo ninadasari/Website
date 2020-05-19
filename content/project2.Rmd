@@ -1,0 +1,358 @@
+---
+title: 'Project 2: Modeling, Testing, and Predicting'
+author: "SDS348"
+date: ''
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+#install.packages("sandwich")
+#install.packages("lmtest")
+library(sandwich)
+library(lmtest)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+```
+
+```{R}
+#install.packages("mosaicData")
+library(mosaicData)
+?Gestation
+gestation <- Gestation
+gestation <- gestation %>% mutate(gest=gestation, parwt=(wt.1+dwt)/2, smoke=ifelse(smoke==0, 1, 0)) %>% select(gest, wt, parwt, inc, smoke) %>% na.omit()
+nrow(Gestation)
+637*5
+```  
+
+This Gestation Dataset is from a study examining the link between different factors and male health at birth. The first variable is 'gest'. This variable is numeric and measures the length of gestation in days. The second variable is 'wt'. This variable is numeric and measures the birth weight in ounces. The third variable is 'parwt'. This variable is numeric and measures the average weight of the parents in pounds. The fourth variable is 'inc'. This variable is categorical and ordinal using the following codes: family yearly income in $2500 increments: 0=under 2500, 1=2500-4999, ..., 8=12,500-14,999, 9=15000+. The last variable is 'smoke'. This variable is categorical, nominal, and binary. 1= yes, the mother has smoked before and 2= no, the mother has not smoked before. There are 637 observations per variable, or a total of 3185 observations.
+
+#Manova
+
+First, a one-way MANOVA was conducted to determine the effect of the smoking status of the mother on two dependent variables (gestation length and birth weight of the child).
+
+Null Hypothesis: The means for the smoking groups are equal for both gestation length and for birth weight.
+Alternative hypothesis: For at least one of the response variables, the smoker groups mean is different.
+
+```{R}
+man1<-manova(cbind(gest,wt)~smoke, data=gestation)
+summary(man1)
+```  
+
+Significant differences were found between the income groups for at least one of the dependent variables, Pillai trace=0.02, pseudo F (2, 634)=7.01, p < 0.001.
+
+Univariate ANOVAs for each dependent variable were conducted as follow-up tests to the MANOVA.
+```{R}
+summary.aov(man1)
+```  
+
+The univariate ANOVA for gestation period was not significant, but that birth weight was significant, F(1, 635)=1.35, p=0.246, and F(1, 635)=13.9, p<0.001, respectively.
+
+Because there are only 2 groups in the 'smoke' variable, we already know from the univariate ANOVA that the significant difference in birth weights occurs between these two groups. A post hoc analysis was performed regardless to conduct pairwise comparisons.
+```{R}
+gestation%>%group_by(smoke)%>%summarize(mean(wt))
+pairwise.t.test(gestation$wt,gestation$smoke,
+                p.adj="none")
+1-0.95^4
+0.05/4
+```  
+
+A total of 4 tests were run (1 MANOVA, 2 ANOVAs, and 1 t test). The probability of at least one type I error is 0.185. The Bonferroni method for controlling Type I error rates for multiple comparisons was used (bonferroni alpha=0.05/4=0.0125). Children whose mothers had smoked and whose had not smoked differ significantly from each other in terms of birth weight after adjusting for multiple comparisons (p=0.0002 < bonferroni alpha). All of the significant differences described hold true even by using this bonferroni alpha instead of 0.05.
+
+The assumptions for this MANOVA test were checked.
+
+1. Random samples, independent observations: The data was acquired through volunteers who participated in the study. Thus, we fail this assumption.
+
+2. Multivariate normality of DVs (or each group n=25+): Each group has more than 25 observations, so this assumption is met.
+
+3. Homogeneity of within-group covariance matrices.
+```{R}
+covmats<-gestation%>%group_by(smoke)%>%do(covs=cov(.[2:3]))
+for(i in 1:2){print(as.character(covmats$smoke[i])); print(covmats$covs[i])}
+```  
+
+Examination of covariance matrices for each group revealed that we feel to meet relative homogeneity.
+
+4. Linear relationship among dependent variables.
+```{R}
+gestation %>% ggplot(aes(gest,wt))+geom_point()
+```  
+
+There seems to be a roughly linear relationship between gestation period and birth weight. However, there is funneling present.
+
+5. No extreme univariate or multivariate outliers:
+No univariate or multivariate outliers were evident.
+
+6. No multicollinearity:
+Therefore, we failed many of the MANOVA assumptions, which are limitations to the results of this MANOVA.
+
+#Randomization Test
+
+Next, a randomization test was performed to break any systematic association between the group and gestation period.
+
+Null Hypothesis: The mean gestation period was equal for children whose mothers smoked and whose mothers did not smoke.
+
+Alternative hypothesis: The mean gestation period is different for children whose mothers smoked and whose mothers did not smoke.
+
+```{R}
+gestation%>%group_by(smoke)%>%
+  summarize(means=mean(gest))%>%summarize(`mean_diff:`=diff(means))
+
+rand_dist<-vector()
+for(i in 1:5000){
+new<-data.frame(gest=sample(gestation$gest),smoke=gestation$smoke) 
+rand_dist[i]<-mean(new[new$smoke==1,]$gest)-
+              mean(new[new$smoke==0,]$gest)}
+
+mean(rand_dist>1.452 | rand_dist< -1.452)
+{hist(rand_dist,main="Null Distribution",ylab=""); abline(v = 1.452,col="red")}
+``` 
+
+From the randomization test, we fail to reject the null hypothesis. There is not enough evidence that there is a significant difference in mean gestation periods between children whose mothers smoked and whose mothers did not (p=0.25).
+ 
+#Linear Regression
+
+A linear regression was performed to predict birth weight using the explanatory variables parent weight (mean centered) and whether the mother is a smoker.
+
+Null Hypothesis 1: Controlling for whether the mother has smoked, the weight of the parents does not explain variation in the birth weight of the child.
+
+Null Hypothesis 2: Controlling for the weight of the parents, whether the mother has smoked or not does not explain variation in the birth weight of the child.
+
+Null Hypothesis 3: There is no significant interaction between parent weight and whether the mother smokes.
+
+```{R}
+gestation <- gestation %>% mutate(parwt_c=(gestation$parwt-mean(gestation$parwt)))
+fit1<-lm(wt ~ parwt_c * smoke, data=gestation); summary(fit1)
+```  
+
+The predicted child birth weight of a child who has an average parent weight and whose mom does not smoke is 116.810 ounces. Controlling for whether the mother has smoked, for every one pound increase in parent weight, the birth weight of the child increases by 0.289 ounces. Controlling for the weight of the parents, children whose mothers smoked were on average 5.378 ounces heavier at birth than children whose mothers had never smoked. The slope for birth weight is 0.127 ounces less for children whose mothers smoke compared to not.
+
+```{R}
+ggplot(gestation, aes(x=parwt, y=wt))+geom_point()+geom_smooth(method="lm",formula=y~1,se=F,fullrange=T,aes(color=smoke))+
+theme(legend.position="none")+ggtitle("t-test")+xlab(" Parent Weight")+ylab("Birth Weight of Child")
+```  
+
+#Assumptions
+
+1) Linear relationship between the parent weight and the birth weight of the child:
+```{R}
+breaks <- seq(min(gestation$parwt_c), max(gestation$parwt_c), len=8)
+ggplot(gestation, aes(parwt_c, wt)) +
+  geom_point(alpha=.3) +
+  theme_bw()+
+  geom_vline(xintercept=breaks, lty=2,color='gray50')
+```  
+
+From the graph, there are no funneling or curvy patterns present. However, there is no linear pattern either. Thus, we fail to meet this assumption. This is a limitation of our test, but we continue on regardless.
+
+2) Independent observations, random sample:
+
+The observations were independent. The sample was not truly random, since the data was collected from volunteer participants.
+
+3) Normally distributed residuals:
+```{R}
+resids<-fit1$residuals
+ggplot()+geom_histogram(aes(resids),bins=20)
+```  
+
+From the histogram, the residuals are approximately normally distributed and we meet this assumption.
+
+4) Equal variance (homoskedasticity):
+```{R}
+fitvals<-fit1$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, color='red')
+```  
+From this graph, there is no fanning out. Therefore, it seems that we meet the assumption of homoskedasticity.
+  
+```{R}
+coeftest(fit1, vcov=vcovHC(fit1))
+```  
+Using the robust SEs, the regression was rerun. Controlling for whether the mother smokes, for every one pound increase in parent weight, the child birth weight increases by 0.289 ounces (t=4.406, df=633, p<0.001). Controlling for the parent weight, children whose mothers smoke are on average 5.378 ounces heavier at birth (t=3.826, df=633, p<0.001). For a child whose parent weight is average and whose mother does not smoke, the expected birth weight is 116.810 ounces (t=117.075, df=633, p<0.001). The interaction is not significant, so the effect of smoking does not change the effect of parent weight on the birth weight of the child (t=-1.279, df=633, p=0.201). The robust SEs resulted in slightly larger values than regular SEs. Although the p values for the main effect of parent weight and the interaction are slightly different with the robust SEs compared to the regular ones, the coefficients that are significant remain significant, and the ones that are not remain the same as well. This model explains 6.29% of the variation in the outcome. 
+
+#Bootstrapped SEs
+
+The same regression model with the interaction was rerun, but this time with bootstrapped SEs. 
+```{R}
+samp_distn<-replicate(5000, {
+  boot_dat<-gestation[sample(nrow(gestation),replace=TRUE),]
+  fit<-lm(wt ~ parwt_c * smoke, data=boot_dat)
+  coef(fit)
+})
+
+## Estimated SEs
+samp_distn%>%t%>%as.data.frame%>%summarize_all(sd)
+```  
+
+Compared to the original SEs, the robust SEs are slightly larger and have slightly larger p values. The bootstrapped SEs are slightly smaller than the robust SEs, but slightly larger than the original SEs. Thus, the p values for the bootstrap SEs are also slightly smaller than the ones from the robust SEs, but slightly larger than those of the original SEs.
+
+#Logistic Regression
+
+Next, a logistic regression was performed to predict the binary categorical variable 'smoke' from the explanatory variables birth weight and gestation period.
+
+```{R}
+fit3<-glm(smoke~wt+gest,data=gestation,family=binomial(link="logit"))
+coeftest(fit3)
+exp(coef(fit3))
+
+class_diag<-function(probs,truth){
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+
+prob <- predict(fit3, type = "response")
+class_diag(prob, gestation$smoke)
+table(predict = as.numeric(prob > 0.5), truth = gestation$smoke) %>% addmargins
+```
+
+Controlling for birth weight, for every one day increase in the gestation period, the odds of the mother smoking increase by a factor of 0.998 (not significant, p=0.731). Controlling for the gestation period, for every one ounce increase in birth weight, the odds of the mother smoking increase by a factor of 1.017 (significant, p<0.001). From the confusion matrix, most of the mothers who smoked were incorrectly predicted to be. However, most of the mothers who were not smokers were correctly predicted to not be. The accuracy, sensitivity, specificity, and recall of this model are 0.559, 0.391, 0.707, and 0.542 respectively. We can see from these values that this model is not great.
+
+```{R}
+gestation$logit<-predict(fit3,type="link")
+gestation%>%ggplot()+geom_density(aes(logit,color=smoke,fill=smoke), alpha=.4)+
+  theme(legend.position=c(.85,.85))+geom_vline(xintercept=0)+xlab("logit (log-odds)")
+```
+
+Next, a ROC curve was created and AUC was calculated.
+
+```{R}
+gestation <- gestation %>% mutate(prob = predict(fit3, type = "response"),
+    prediction = ifelse(prob > 0.5, 1, 0))
+classify <- gestation %>% transmute(prob, prediction, truth = smoke)
+library(plotROC)
+ROCplot <- ggplot(classify) + geom_roc(aes(d = truth, m = prob),
+    n.cuts = 0)
+ROCplot
+calc_auc(ROCplot)
+```
+
+The AOC is 0.590, which shows that this model is poor.
+
+Next, a 10-fold CV was performed using the same model.
+```{R}
+set.seed(1234)
+k=10
+
+data<-gestation[sample(nrow(gestation)),] #put dataset in random order
+folds<-cut(seq(1:nrow(data)),breaks=k,labels=F) #create folds
+
+diags<-NULL
+for(i in 1:k){          # FOR EACH OF 10 FOLDS
+  train<-data[folds!=i,] # CREATE TRAINING SET
+  test<-data[folds==i,]  # CREATE TESTING SET
+  
+  truth<-test$smoke
+  fit4 <- glm(smoke~wt+gest, data=train, family="binomial")
+  probs<- predict(fit4, newdata=test, type="response")
+  diags<-rbind(diags,class_diag(probs,truth)) #CV DIAGNOSTICS FOR EACH FOLD
+}
+
+summarize_all(diags,mean) #AVERAGE THE DIAGNOSTICS ACROSS THE 10 FOLDS
+
+#out of sample
+if(as.numeric(version$minor)>6.0){RNGkind(sample.kind = "Rounding")} #run this to make n
+set.seed(1234)
+first_half1<-gestation%>%sample_frac(.5) #random half of the dataset for training
+second_half1<-anti_join(gestation,first_half1) #save the other half to test
+
+fit5<-glm(smoke~wt+gest, data=first_half1, family="binomial")
+probs1<-predict(fit5, newdata=second_half1, type="response")
+truth1<-second_half1$smoke #truth labels from testing set
+class_diag(probs1,truth1)
+```
+
+The out of sample accuracy, sensitivity, and recall are 0.504, 0.370, and 0.483 respectively.
+
+#Lasso Regression
+
+Next, a lasso regression was performed to predict whether the mother smokes using all of the other variables as explanatory variables.
+```{R}
+#install.packages("glmnet")
+library(glmnet)
+set.seed(1234)
+fit6 <- glm(smoke~gest+wt+parwt+inc, data=gestation, family="binomial")
+
+y<-as.matrix(gestation$smoke) #grab response
+x<-model.matrix(fit6)[,-1] #grab predictors
+
+cv<-cv.glmnet(x,y,family="binomial")
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se)
+coef(lasso)
+```
+
+The only coefficient that is not 0 is 'wt'. Thus, a 10-fold CV was performed using weight as the explanatory variable. Additionally, the out-of-sample accuracy was calculated for this lasso model.
+
+```{R}
+set.seed(1234)
+k=10
+
+data<-gestation[sample(nrow(gestation)),] #put dataset in random order
+folds<-cut(seq(1:nrow(data)),breaks=k,labels=F) #create folds
+
+diags<-NULL
+for(i in 1:k){          # FOR EACH OF 10 FOLDS
+  train<-data[folds!=i,] # CREATE TRAINING SET
+  test<-data[folds==i,]  # CREATE TESTING SET
+  
+  truth<-test$smoke
+  fit7 <- glm(smoke~wt, data=train, family="binomial")
+  probs<- predict(fit7, newdata=test, type="response")
+  diags<-rbind(diags,class_diag(probs,truth)) #CV DIAGNOSTICS FOR EACH FOLD
+}
+
+summarize_all(diags,mean) #AVERAGE THE DIAGNOSTICS ACROSS THE 10 FOLDS
+
+#out of sample for lasso
+if(as.numeric(version$minor)>6.0){RNGkind(sample.kind = "Rounding")} #run this to make n
+set.seed(1234)
+first_half2<-gestation%>%sample_frac(.5) #random half of the dataset for training
+second_half2<-anti_join(gestation,first_half2) #save the other half to test
+
+fit8<-glm(smoke~wt, data=first_half2, family="binomial")
+probs2<-predict(fit8, newdata=second_half2, type="response")
+truth2<-second_half2$smoke #truth labels from testing set
+table(prediction=as.numeric(probs2>.5), truth2) #confusion matrix
+class_diag(probs2,truth2)
+```
+
+The out of sample accuracy for this 10-fold CV lasso model is 0.542. The out of sample accuracy for the logistic regression is 0.505. Thus, the 10-fold CV lasso model is more accurate and therefore a better model than the logistic regression.

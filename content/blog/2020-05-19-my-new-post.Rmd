@@ -1,0 +1,30 @@
+---
+title: My New Post
+author: ''
+date: '2020-05-19'
+slug: my-new-post
+categories: []
+tags: []
+description: ''
+---
+
+Put something in here.
+
+![](/blog/2020-05-19-my-new-post_files/blogpic.png)
+
+```{python}
+#this is a python code chunk
+print("hello world!")
+x="dog"
+```
+
+```{R}
+library(reticulate)
+#this is a R code chunk
+py$x
+y<-2
+```
+
+```{python}
+r.y+1 == 3
+```

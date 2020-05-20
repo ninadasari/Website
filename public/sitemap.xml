@@ -23,11 +23,6 @@
   </url>
   
   <url>
-    <loc>/blog/my-new-post/</loc>
-    <lastmod>2020-05-19T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/project2/</loc>
     <lastmod>2020-05-19T00:00:00+00:00</lastmod>
   </url>
@@ -44,6 +39,11 @@
   
   <url>
     <loc>/categories/projects/</loc>
+    <lastmod>2020-05-19T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/blog/my-new-post/</loc>
     <lastmod>2020-05-19T00:00:00+00:00</lastmod>
   </url>
   

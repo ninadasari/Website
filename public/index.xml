@@ -21,17 +21,6 @@
     </item>
     
     <item>
-      <title>My New Post</title>
-      <link>/blog/my-new-post/</link>
-      <pubDate>Tue, 19 May 2020 00:00:00 +0000</pubDate>
-      
-      <guid>/blog/my-new-post/</guid>
-      <description>Python The following is an example of slicing.
-x=[&amp;#39;p&amp;#39;, &amp;#39;y&amp;#39;, &amp;#39;t&amp;#39;, &amp;#39;h&amp;#39;, &amp;#39;o&amp;#39;, &amp;#39;n&amp;#39;] x[2:4] #elements between slices 2 and 3 (or elements from position 2 up to but not including 4) ## [&amp;#39;t&amp;#39;, &amp;#39;h&amp;#39;] The following is an example of using re.findall() to match the IP addresses in this string.
-import re string=&amp;quot;Jan 13 00:48:59: DROP service 68-&amp;gt;67(udp) from 213.92.153.167 to 69.43.107.219, prefix: \&amp;quot;spoof iana-0/8\&amp;quot; \ (in: eth0 69.</description>
-    </item>
-    
-    <item>
       <title>Project 2: Modeling, Testing, and Predicting</title>
       <link>/project2/</link>
       <pubDate>Tue, 19 May 2020 00:00:00 +0000</pubDate>
@@ -50,6 +39,17 @@ import re string=&amp;quot;Jan 13 00:48:59: DROP service 68-&amp;gt;67(udp) from
   Exploratory Data Analysis with Tidyverse Tools
   Modeling, Testing, and Classification
   </description>
+    </item>
+    
+    <item>
+      <title>Some fun with Python and R Code!</title>
+      <link>/blog/my-new-post/</link>
+      <pubDate>Tue, 19 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/my-new-post/</guid>
+      <description>Python The following is an example of slicing.
+x=[&amp;#39;p&amp;#39;, &amp;#39;y&amp;#39;, &amp;#39;t&amp;#39;, &amp;#39;h&amp;#39;, &amp;#39;o&amp;#39;, &amp;#39;n&amp;#39;] x[2:4] #elements between slices 2 and 3 (or elements from position 2 up to but not including 4) ## [&amp;#39;t&amp;#39;, &amp;#39;h&amp;#39;] The following is an example of using re.findall() to match the IP addresses in this string.
+import re string=&amp;quot;Jan 13 00:48:59: DROP service 68-&amp;gt;67(udp) from 213.92.153.167 to 69.43.107.219, prefix: \&amp;quot;spoof iana-0/8\&amp;quot; \ (in: eth0 69.</description>
     </item>
     
   </channel>

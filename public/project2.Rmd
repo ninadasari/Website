@@ -1,7 +1,7 @@
 ---
 title: 'Project 2: Modeling, Testing, and Predicting'
 author: "SDS348"
-date: ''
+date: '2020-05-19'
 output:
   pdf_document:
     toc: yes
@@ -14,8 +14,6 @@ output:
 
 ```{r setup, include=FALSE}
 library(knitr)
-#install.packages("sandwich")
-#install.packages("lmtest")
 library(sandwich)
 library(lmtest)
 hook_output = knit_hooks$get('output')
@@ -36,7 +34,6 @@ library(tidyverse)
 ```
 
 ```{R}
-#install.packages("mosaicData")
 library(mosaicData)
 ?Gestation
 gestation <- Gestation
@@ -307,7 +304,6 @@ The out of sample accuracy, sensitivity, and recall are 0.504, 0.370, and 0.483 
 
 Next, a lasso regression was performed to predict whether the mother smokes using all of the other variables as explanatory variables.
 ```{R}
-#install.packages("glmnet")
 library(glmnet)
 set.seed(1234)
 fit6 <- glm(smoke~gest+wt+parwt+inc, data=gestation, family="binomial")

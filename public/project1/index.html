@@ -44,7 +44,7 @@
         
         <li><a href="/projects/">PROJECTS</a></li>
         
-        <li><a href="/resume/">RESUME</a></li>
+        <li><a href="/resume.pdf">RESUME</a></li>
         
       
       </ul>
@@ -61,7 +61,7 @@
         </div>
         <div class="blog-title">
           <h4>
-          January 1, 0001
+          May 20, 2020
             &nbsp;&nbsp;
             
           </h4>
@@ -73,8 +73,7 @@
 
 
 <p>3 separate datasets were used to create the final dataset. The first is in the package Ecdat, and is called “breaches”. This dataset was created by the US Department of Health and Human Services. There are many variables in this dataset, but for my analysis, only ‘State’ was used. Another variable was created called ‘Cyber’ that summed up the total number of security breaches by state. The second dataset used was “USstateAbbreviations” in order to convert the 2 letter stae code from the “breaches” dataset into the full name of the state. The last dataset is in the package Datasets, and is called “USArrests”. This dataset measured 4 variables per state. ‘Murder’ is the number of murder arrests per 100,000 individuals. ‘Assault’ is the number of assault arrests per 100,000 individuals. ‘UrbanPop’ is the percentage of the population that is urban. ‘Rape’ is the number of rape arrests per 100,000 individuals. These specific datasets were used because I want to see if there is any relationship between cyber security attacks and violent crimes by state.</p>
-<pre class="r"><code># install.packages(&#39;Ecdat&#39;)
-library(Ecdat)
+<pre class="r"><code>library(Ecdat)
 library(tidyverse)
 `?`(breaches)
 breaches &lt;- breaches
@@ -85,7 +84,6 @@ USstateAbbreviations &lt;- USstateAbbreviations %&gt;% select(&quot;Name&quot;,
 data1 &lt;- inner_join(breaches1, USstateAbbreviations, by = c(State = &quot;ANSI.letters&quot;)) %&gt;% 
     rename(Abbreviation = State, State = Name)
 
-# install.packages(&#39;datasets&#39;)
 library(datasets)
 `?`(USArrests)
 USArrests &lt;- USArrests

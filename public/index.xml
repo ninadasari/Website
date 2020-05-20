@@ -6,10 +6,19 @@
     <description>Recent content on Portfolio</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Sun, 02 Oct 2016 22:55:05 -0400</lastBuildDate>
+    <lastBuildDate>Wed, 20 May 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Project 1: Exploratory Data Analysis</title>
+      <link>/project1/</link>
+      <pubDate>Wed, 20 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/project1/</guid>
+      <description>3 separate datasets were used to create the final dataset. The first is in the package Ecdat, and is called “breaches”. This dataset was created by the US Department of Health and Human Services. There are many variables in this dataset, but for my analysis, only ‘State’ was used. Another variable was created called ‘Cyber’ that summed up the total number of security breaches by state. The second dataset used was “USstateAbbreviations” in order to convert the 2 letter stae code from the “breaches” dataset into the full name of the state.</description>
+    </item>
     
     <item>
       <title>My New Post</title>
@@ -22,33 +31,24 @@
     </item>
     
     <item>
+      <title>Project 2: Modeling, Testing, and Predicting</title>
+      <link>/project2/</link>
+      <pubDate>Tue, 19 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/project2/</guid>
+      <description>library(mosaicData) ?Gestation gestation &amp;lt;- Gestation gestation &amp;lt;- gestation %&amp;gt;% mutate(gest=gestation, parwt=(wt.1+dwt)/2, smoke=ifelse(smoke==0, 1, 0)) %&amp;gt;% select(gest, wt, parwt, inc, smoke) %&amp;gt;% na.omit() nrow(Gestation) ## [1] 1236 637*5 ## [1] 3185 This Gestation Dataset is from a study examining the link between different factors and male health at birth. The first variable is ‘gest’. This variable is numeric and measures the length of gestation in days. The second variable is ‘wt’.</description>
+    </item>
+    
+    <item>
       <title>Projects</title>
       <link>/projects/</link>
-      <pubDate>Sun, 02 Oct 2016 22:55:05 -0400</pubDate>
+      <pubDate>Tue, 19 May 2020 00:00:00 +0000</pubDate>
       
       <guid>/projects/</guid>
       <description>Projects Here are some projects I have recently completed:
   Exploratory Data Analysis with Tidyverse Tools
   Modeling, Testing, and Classification
   </description>
-    </item>
-    
-    <item>
-      <title>Project 1: Exploratory Data Analysis</title>
-      <link>/project1/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/project1/</guid>
-      <description>3 separate datasets were used to create the final dataset. The first is in the package Ecdat, and is called “breaches”. This dataset was created by the US Department of Health and Human Services. There are many variables in this dataset, but for my analysis, only ‘State’ was used. Another variable was created called ‘Cyber’ that summed up the total number of security breaches by state. The second dataset used was “USstateAbbreviations” in order to convert the 2 letter stae code from the “breaches” dataset into the full name of the state.</description>
-    </item>
-    
-    <item>
-      <title>Project 2: Modeling, Testing, and Predicting</title>
-      <link>/project2/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/project2/</guid>
-      <description>#install.packages(&amp;quot;mosaicData&amp;quot;) library(mosaicData) ?Gestation gestation &amp;lt;- Gestation gestation &amp;lt;- gestation %&amp;gt;% mutate(gest=gestation, parwt=(wt.1+dwt)/2, smoke=ifelse(smoke==0, 1, 0)) %&amp;gt;% select(gest, wt, parwt, inc, smoke) %&amp;gt;% na.omit() nrow(Gestation) ## [1] 1236 637*5 ## [1] 3185 This Gestation Dataset is from a study examining the link between different factors and male health at birth. The first variable is ‘gest’. This variable is numeric and measures the length of gestation in days. The second variable is ‘wt’.</description>
     </item>
     
   </channel>

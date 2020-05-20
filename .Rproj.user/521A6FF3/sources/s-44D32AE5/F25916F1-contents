@@ -1,0 +1,177 @@
+---
+title: 'Project 1: Exploratory Data Analysis'
+author: "SDS348"
+date: ''
+output:
+  pdf_document:
+    toc: no
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+---
+
+
+
+<p>3 separate datasets were used to create the final dataset. The first is in the package Ecdat, and is called “breaches”. This dataset was created by the US Department of Health and Human Services. There are many variables in this dataset, but for my analysis, only ‘State’ was used. Another variable was created called ‘Cyber’ that summed up the total number of security breaches by state. The second dataset used was “USstateAbbreviations” in order to convert the 2 letter stae code from the “breaches” dataset into the full name of the state. The last dataset is in the package Datasets, and is called “USArrests”. This dataset measured 4 variables per state. ‘Murder’ is the number of murder arrests per 100,000 individuals. ‘Assault’ is the number of assault arrests per 100,000 individuals. ‘UrbanPop’ is the percentage of the population that is urban. ‘Rape’ is the number of rape arrests per 100,000 individuals. These specific datasets were used because I want to see if there is any relationship between cyber security attacks and violent crimes by state.</p>
+<pre class="r"><code>library(Ecdat)
+library(tidyverse)
+`?`(breaches)
+breaches &lt;- breaches
+breaches1 &lt;- breaches %&gt;% group_by(State) %&gt;% select(&quot;Number&quot;, 
+    &quot;State&quot;) %&gt;% na.omit() %&gt;% summarize(Cyber = length(Number))
+USstateAbbreviations &lt;- USstateAbbreviations %&gt;% select(&quot;Name&quot;, 
+    &quot;ANSI.letters&quot;)
+data1 &lt;- inner_join(breaches1, USstateAbbreviations, by = c(State = &quot;ANSI.letters&quot;)) %&gt;% 
+    rename(Abbreviation = State, State = Name)
+
+library(datasets)
+`?`(USArrests)
+USArrests &lt;- USArrests
+data2 &lt;- USArrests %&gt;% as.data.frame %&gt;% mutate(State = rownames(USArrests))</code></pre>
+<p>The data sets were then joined together using ‘inner_join’. This function automatically joins by the ‘State’ column since both datasets have that variable. And, inner_join specifically was used because the first data set included data for Washington DC and Puerto Rico, while the second data set did not. Thus, inner_join allows R to automatically combine the data for the 50 states and omit DC and Puerto Rico.</p>
+<pre class="r"><code>fulldata &lt;- inner_join(data1, data2) %&gt;% select(State, Cyber, 
+    Murder, Rape, UrbanPop, Assault)</code></pre>
+<p>Next, a categorical binary variable was created. States that had urban populations greater than the median were classified under the ‘Size’ variable as “Big”. States that had urban populations less than the median were classified as “Small”.</p>
+<pre class="r"><code>fulldata &lt;- fulldata %&gt;% mutate(Size = ifelse(UrbanPop &gt; median(UrbanPop), 
+    &quot;Big&quot;, &quot;Small&quot;))</code></pre>
+<p>Next, the filter() functoin was used to further examine the full dataset.</p>
+<pre class="r"><code>fulldata %&gt;% filter(Cyber == max(Cyber))</code></pre>
+<pre><code>## # A tibble: 1 x 7
+##   State      Cyber Murder  Rape UrbanPop Assault Size 
+##   &lt;chr&gt;      &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt;    &lt;int&gt;   &lt;int&gt; &lt;chr&gt;
+## 1 California   113      9  40.6       91     276 Big</code></pre>
+<pre class="r"><code>fulldata %&gt;% filter(Murder == max(Murder))</code></pre>
+<pre><code>## # A tibble: 1 x 7
+##   State   Cyber Murder  Rape UrbanPop Assault Size 
+##   &lt;chr&gt;   &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt;    &lt;int&gt;   &lt;int&gt; &lt;chr&gt;
+## 1 Georgia    30   17.4  25.8       60     211 Small</code></pre>
+<p>This output tells us that the state with the highest number of cybersecurity breaches is California. The state with the highest murder rate is Georgia.</p>
+<p>Next, summary statistics were calculated for the numeric variables on the whole dataset.</p>
+<pre class="r"><code>fulldata %&gt;% select_if(is.numeric) %&gt;% summarize_all(.funs = list(mean = mean, 
+    median = median, sd = sd, var = &quot;var&quot;, min = &quot;min&quot;, max = &quot;max&quot;, 
+    n_distinct = &quot;n_distinct&quot;), na.rm = T) %&gt;% pivot_longer(contains(&quot;_&quot;)) %&gt;% 
+    separate(name, sep = &quot;_&quot;, into = c(&quot;variable&quot;, &quot;stat&quot;)) %&gt;% 
+    pivot_wider(names_from = &quot;variable&quot;, values_from = &quot;value&quot;) %&gt;% 
+    arrange(stat)</code></pre>
+<pre><code>## # A tibble: 7 x 6
+##   stat   Cyber Murder  Rape UrbanPop Assault
+##   &lt;chr&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;
+## 1 max    113    17.4  46        91     337  
+## 2 mean    20.3   7.79 21.2      65.5   171. 
+## 3 median  13.5   7.25 20.1      66     159  
+## 4 min      1     0.8   7.3      32      45  
+## 5 n       30    43    48        36      45  
+## 6 sd      22.2   4.36  9.37     14.5    83.3
+## 7 var    492.   19.0  87.7     210.   6945.</code></pre>
+<p>The median assault rate is higher than the median rate for any of the other crimes in this dataset. Assault also has the most variation from state to state. Murder has the lowest median rate.</p>
+<p>Next, summary statistics were calculated on the numeric variables after grouping by ‘Size’.</p>
+<pre class="r"><code># Summary Stats after grouping by Size
+fulldata %&gt;% group_by(Size) %&gt;% select_if(is.numeric) %&gt;% summarize_all(.funs = list(mean = mean, 
+    median = median, sd = sd, var = &quot;var&quot;, min = &quot;min&quot;, max = &quot;max&quot;, 
+    n_distinct = &quot;n_distinct&quot;), na.rm = T) %&gt;% pivot_longer(contains(&quot;_&quot;)) %&gt;% 
+    separate(name, sep = &quot;_&quot;, into = c(&quot;variable&quot;, &quot;stat&quot;)) %&gt;% 
+    pivot_wider(names_from = &quot;variable&quot;, values_from = &quot;value&quot;) %&gt;% 
+    arrange(Size)</code></pre>
+<pre><code>## # A tibble: 14 x 7
+##    Size  stat   Cyber Murder  Rape UrbanPop Assault
+##    &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;
+##  1 Big   mean    29.2   8.02 25.5     77.8    198. 
+##  2 Big   median  20.5   7.65 25.8     79      190. 
+##  3 Big   sd      27.4   3.45  9.28     7.08    74.7
+##  4 Big   var    752.   11.9  86.1     50.1   5587. 
+##  5 Big   min      1     3.2   8.3     67       46  
+##  6 Big   max    113    15.4  46       91      335  
+##  7 Big   n       22    23    24       17       22  
+##  8 Small mean    12.1   7.57 17.3     54.2    145. 
+##  9 Small median   7.5   6.4  16.4     55      114  
+## 10 Small sd      11.3   5.11  7.68     9.25    84.1
+## 11 Small var    127.   26.1  59.0     85.6   7069. 
+## 12 Small min      1     0.8   7.3     32       45  
+## 13 Small max     40    17.4  44.5     66      337  
+## 14 Small n       18    21    26       19       25</code></pre>
+<pre class="r"><code># Correlation Matrix
+fulldata %&gt;% select_if(is.numeric) %&gt;% cor()</code></pre>
+<pre><code>##              Cyber     Murder      Rape   UrbanPop   Assault
+## Cyber    1.0000000 0.36376155 0.3962982 0.49981415 0.3857142
+## Murder   0.3637616 1.00000000 0.5635788 0.06957262 0.8018733
+## Rape     0.3962982 0.56357883 1.0000000 0.41134124 0.6652412
+## UrbanPop 0.4998141 0.06957262 0.4113412 1.00000000 0.2588717
+## Assault  0.3857142 0.80187331 0.6652412 0.25887170 1.0000000</code></pre>
+<p>From the correlation matrix, we can see that cyber security breaches had the highest correlation with UrbanPop, and the lowest correlation with Murder. Overall, Assault and Murder are the best correlated, while urbanPop and Murder had the weakest correlation.</p>
+<pre class="r"><code>fulldata %&gt;% group_by(Size) %&gt;% select_if(is.numeric) %&gt;% summarize_all(.funs = list(mean = mean, 
+    median = median, sd = sd, var = &quot;var&quot;, min = &quot;min&quot;, max = &quot;max&quot;, 
+    n_distinct = &quot;n_distinct&quot;), na.rm = T) %&gt;% pivot_longer(contains(&quot;_&quot;)) %&gt;% 
+    separate(name, sep = &quot;_&quot;, into = c(&quot;variable&quot;, &quot;stat&quot;)) %&gt;% 
+    pivot_wider(names_from = &quot;variable&quot;, values_from = &quot;value&quot;) %&gt;% 
+    arrange(Size)</code></pre>
+<pre><code>## # A tibble: 14 x 7
+##    Size  stat   Cyber Murder  Rape UrbanPop Assault
+##    &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;
+##  1 Big   mean    29.2   8.02 25.5     77.8    198. 
+##  2 Big   median  20.5   7.65 25.8     79      190. 
+##  3 Big   sd      27.4   3.45  9.28     7.08    74.7
+##  4 Big   var    752.   11.9  86.1     50.1   5587. 
+##  5 Big   min      1     3.2   8.3     67       46  
+##  6 Big   max    113    15.4  46       91      335  
+##  7 Big   n       22    23    24       17       22  
+##  8 Small mean    12.1   7.57 17.3     54.2    145. 
+##  9 Small median   7.5   6.4  16.4     55      114  
+## 10 Small sd      11.3   5.11  7.68     9.25    84.1
+## 11 Small var    127.   26.1  59.0     85.6   7069. 
+## 12 Small min      1     0.8   7.3     32       45  
+## 13 Small max     40    17.4  44.5     66      337  
+## 14 Small n       18    21    26       19       25</code></pre>
+<pre class="r"><code># Correlation Matrix
+fulldata %&gt;% select_if(is.numeric) %&gt;% cor()</code></pre>
+<pre><code>##              Cyber     Murder      Rape   UrbanPop   Assault
+## Cyber    1.0000000 0.36376155 0.3962982 0.49981415 0.3857142
+## Murder   0.3637616 1.00000000 0.5635788 0.06957262 0.8018733
+## Rape     0.3962982 0.56357883 1.0000000 0.41134124 0.6652412
+## UrbanPop 0.4998141 0.06957262 0.4113412 1.00000000 0.2588717
+## Assault  0.3857142 0.80187331 0.6652412 0.25887170 1.0000000</code></pre>
+<p>#Visualizing</p>
+<p>A correlation heatmap of the numeric variables was created.</p>
+<pre class="r"><code>fulldata %&gt;% select_if(is.numeric) %&gt;% cor() %&gt;% as.data.frame %&gt;% 
+    rownames_to_column() %&gt;% pivot_longer(-1) %&gt;% ggplot(aes(rowname, 
+    name, fill = value)) + geom_tile() + geom_text(aes(label = round(value, 
+    2))) + scale_fill_gradient2(low = &quot;red&quot;, high = &quot;blue&quot;) + 
+    ggtitle(&quot;Plot 1: Correlation Heat Map of Numeric Variables&quot;)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" />
+From the heatmap, we can see that the weakest correlation is between ‘UrbanPop’ and ‘Murder’. ‘Assault’ and ‘Murder’ had the highest correlation.</p>
+<p>The data was then visualized using a second plot.</p>
+<pre class="r"><code>library(ggplot2)
+fulldata %&gt;% ggplot(aes(x = Cyber, y = Murder)) + geom_point(aes(color = UrbanPop)) + 
+    ggtitle(&quot;Plot 2: Murders vs Cyber Security Breaches&quot;) + xlab(&quot;Cyber Security Breaches&quot;) + 
+    ylab(&quot;Murder Rate per 100,000&quot;) + theme(legend.position = c(0.9, 
+    0.2))</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>There seems to be a positive relationship between cybersecurity breaches and the murder rate. Urban population, represented by the color of the points, does not seem to have a relationship with either cyber security breaches or the murder rate of the state. There are a couple outliers that have extremely high cyber security breaches.</p>
+<p>The data was then visualized using a third plot.</p>
+<pre class="r"><code>fulldata %&gt;% ggplot(aes(x = Murder, y = Assault)) + geom_point(aes(color = Rape, 
+    stat = &quot;summary&quot;)) + ggtitle(&quot;Plot 3: Assaults vs Murders&quot;) + 
+    xlab(&quot;Murders per 100,000&quot;) + ylab(&quot;Assaults per 100,000&quot;) + 
+    scale_y_continuous(breaks = seq(0, 350, 50)) + scale_color_gradient(low = &quot;yellow&quot;, 
+    high = &quot;red&quot;)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This plot visualizes the number of assaults versus the amount of murders per 100,000 individuals in the population. From this, we can see that there is a positive relationship between murders and assaults. Additionally, the rapes are visualized by the color of the points. The red dots indicate higher rape rates, while the yellow dots indicate lower rape rates. We can see that rape is positively correlated with both assault and urban population.</p>
+<p>#5 Dimensionality Reduction</p>
+<pre class="r"><code>library(cluster)
+
+gower1 &lt;- fulldata %&gt;% select(&quot;Cyber&quot;, &quot;Murder&quot;, &quot;Rape&quot;, &quot;UrbanPop&quot;, 
+    &quot;Assault&quot;) %&gt;% daisy(metric = &quot;gower&quot;)
+
+sil_width &lt;- vector()
+for (i in 2:10) {
+    pam_fit &lt;- pam(gower1, diss = TRUE, k = i)
+    sil_width[i] &lt;- pam_fit$silinfo$avg.width
+}
+ggplot() + geom_line(aes(x = 1:10, y = sil_width)) + scale_x_continuous(name = &quot;k&quot;, 
+    breaks = 1:10) + ggtitle(&quot;Silhouette Width vs. k&quot;)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>From this ggplot, we can see that the largest sil_width occurs when k=2. A larger silhoutte width is good because it’s more cohesive and separated. Thus, the ideal number of clusters for this dataset is 2.</p>
+<pre class="r"><code>pam3 &lt;- pam(gower1, k = 2, diss = T)
+plot(pam3, which = 2)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>From this plot, we see that the average silhouette width is 0.42. Thus, this structure is weak and could be artificial.</p>

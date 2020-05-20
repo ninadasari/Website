@@ -10,16 +10,67 @@ description: ''
 
 
 
-<p>Put something in here.</p>
 <p><img src="/blog/2020-05-19-my-new-post_files/blogpic.png" /></p>
-<pre class="python"><code>#this is a python code chunk
-print(&quot;hello world!&quot;)</code></pre>
-<pre><code>## hello world!</code></pre>
-<pre class="python"><code>x=&quot;dog&quot;</code></pre>
+<div id="python" class="section level2">
+<h2>Python</h2>
+<p>The following is an example of slicing.</p>
+<pre class="python"><code>x=[&#39;p&#39;, &#39;y&#39;, &#39;t&#39;, &#39;h&#39;, &#39;o&#39;, &#39;n&#39;]
+
+x[2:4]  #elements between slices 2 and 3 (or elements from position 2 up to but not including 4)</code></pre>
+<pre><code>## [&#39;t&#39;, &#39;h&#39;]</code></pre>
+<p>The following is an example of using re.findall() to match the IP addresses in this string.</p>
+<pre class="python"><code>import re
+string=&quot;Jan 13 00:48:59: DROP service 68-&gt;67(udp) from 213.92.153.167 to 69.43.107.219, prefix: \&quot;spoof iana-0/8\&quot; \
+(in: eth0 69.43.112.233(38:f8:b7:90:45:92):68 -&gt; 217.70.100.113(00:21:87:79:9c:d9):67 UDP len:576 ttl:64) \
+Jan 13 12:02:48: ACCEPT service dns from 74.125.186.208 to firewall(pub-nic-dns), prefix: \&quot;none\&quot; \
+(in: eth0 74.125.186.208(00:1a:e3:52:5d:8e):36008 -&gt; 140.105.63.158(00:1a:9a:86:2e:62):53 UDP len:82 ttl:38) \
+Jan 13 17:44:52: DROP service 68-&gt;67(udp) from 172.45.240.237 to 217.70.177.60, prefix: \&quot;spoof iana-0/8\&quot; \
+(in: eth0 216.34.90.16(00:21:91:fe:a2:6f):68 -&gt; 69.43.85.253(00:07:e1:7c:53:db):67 UDP len:328 ttl:64) \
+Jan 13 17:52:08: ACCEPT service http from 213.121.184.130 to firewall(pub-nic), prefix: \&quot;none\&quot; \
+(in: eth0 213.121.184.130(00:05:2e:6a:a4:14):8504 -&gt; 140.105.63.164(00:60:11:92:ed:1b):80 TCP flags: ****S* len:52 ttl:109)&quot;
+
+re.findall(r&quot;\d+(?:\.\d+){3}&quot;, string)</code></pre>
+<pre><code>## [&#39;213.92.153.167&#39;, &#39;69.43.107.219&#39;, &#39;69.43.112.233&#39;, &#39;217.70.100.113&#39;, &#39;74.125.186.208&#39;, &#39;74.125.186.208&#39;, &#39;140.105.63.158&#39;, &#39;172.45.240.237&#39;, &#39;217.70.177.60&#39;, &#39;216.34.90.16&#39;, &#39;69.43.85.253&#39;, &#39;213.121.184.130&#39;, &#39;213.121.184.130&#39;, &#39;140.105.63.164&#39;]</code></pre>
+<p>The following is an example of how to create a dictionary of all the 3-mers in a DNA sequence and count the number of times each occurs.</p>
+<pre class="python"><code>my_seq = &quot;CAGCCCAATCAGGCTCTACTGCCACTAAACTTACGCAGGATATATTTACGCCGACGTACT&quot;
+
+def three_mers(x):
+    out_dict = {}
+    for i in range(len(x) - 2):
+        if x[i:i+3] in out_dict:
+            out_dict[x[i:i+3]] += 1
+        else:
+            out_dict[x[i:i+3]] = 1
+    return out_dict
+
+print(three_mers(my_seq))</code></pre>
+<pre><code>## {&#39;CAG&#39;: 3, &#39;AGC&#39;: 1, &#39;GCC&#39;: 3, &#39;CCC&#39;: 1, &#39;CCA&#39;: 2, &#39;CAA&#39;: 1, &#39;AAT&#39;: 1, &#39;ATC&#39;: 1, &#39;TCA&#39;: 1, &#39;AGG&#39;: 2, &#39;GGC&#39;: 1, &#39;GCT&#39;: 1, &#39;CTC&#39;: 1, &#39;TCT&#39;: 1, &#39;CTA&#39;: 2, &#39;TAC&#39;: 4, &#39;ACT&#39;: 4, &#39;CTG&#39;: 1, &#39;TGC&#39;: 1, &#39;CAC&#39;: 1, &#39;TAA&#39;: 1, &#39;AAA&#39;: 1, &#39;AAC&#39;: 1, &#39;CTT&#39;: 1, &#39;TTA&#39;: 2, &#39;ACG&#39;: 3, &#39;CGC&#39;: 2, &#39;GCA&#39;: 1, &#39;GGA&#39;: 1, &#39;GAT&#39;: 1, &#39;ATA&#39;: 2, &#39;TAT&#39;: 2, &#39;ATT&#39;: 1, &#39;TTT&#39;: 1, &#39;CCG&#39;: 1, &#39;CGA&#39;: 1, &#39;GAC&#39;: 1, &#39;CGT&#39;: 1, &#39;GTA&#39;: 1}</code></pre>
+</div>
+<div id="example-of-using-python-and-r-together" class="section level2">
+<h2>Example of Using Python and R Together</h2>
+<p>The following is python code that is creating a dictionary with fruit prices.</p>
+<pre class="python"><code>fruit_prices = {
+&#39;apple&#39;: 0.65,
+&#39;mango&#39;: 1.50,
+&#39;strawberry&#39;: &#39;$3/lb&#39;,
+&#39;musk melon&#39;: &#39;unavailable&#39;
+}</code></pre>
+<p>The following R code can then be used to call the fruit prices.</p>
 <pre class="r"><code>library(reticulate)
-#this is a R code chunk
-py$x</code></pre>
-<pre><code>## [1] &quot;dog&quot;</code></pre>
-<pre class="r"><code>y&lt;-2</code></pre>
-<pre class="python"><code>r.y+1 == 3</code></pre>
-<pre><code>## True</code></pre>
+py$fruit_prices</code></pre>
+<pre><code>## $apple
+## [1] 0.65
+## 
+## $mango
+## [1] 1.5
+## 
+## $strawberry
+## [1] &quot;$3/lb&quot;
+## 
+## $`musk melon`
+## [1] &quot;unavailable&quot;</code></pre>
+<p>Therefore, we can see that Python can communicate with R. They can also communicate in the reverse direction as seen below.</p>
+<pre class="r"><code>py$fruit_prices$pear=0.75</code></pre>
+<pre class="python"><code>fruit_prices[&#39;pear&#39;]</code></pre>
+<pre><code>## 0.75</code></pre>
+</div>

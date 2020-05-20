@@ -8,23 +8,75 @@ tags: []
 description: ''
 ---
 
-Put something in here.
-
 ![](/blog/2020-05-19-my-new-post_files/blogpic.png)
 
+## Python
+
+The following is an example of slicing.
 ```{python}
-#this is a python code chunk
-print("hello world!")
-x="dog"
+x=['p', 'y', 't', 'h', 'o', 'n']
+
+x[2:4]  #elements between slices 2 and 3 (or elements from position 2 up to but not including 4)
 ```
 
+The following is an example of using re.findall() to match the IP addresses in this string.
+```{python}
+import re
+string="Jan 13 00:48:59: DROP service 68->67(udp) from 213.92.153.167 to 69.43.107.219, prefix: \"spoof iana-0/8\" \
+(in: eth0 69.43.112.233(38:f8:b7:90:45:92):68 -> 217.70.100.113(00:21:87:79:9c:d9):67 UDP len:576 ttl:64) \
+Jan 13 12:02:48: ACCEPT service dns from 74.125.186.208 to firewall(pub-nic-dns), prefix: \"none\" \
+(in: eth0 74.125.186.208(00:1a:e3:52:5d:8e):36008 -> 140.105.63.158(00:1a:9a:86:2e:62):53 UDP len:82 ttl:38) \
+Jan 13 17:44:52: DROP service 68->67(udp) from 172.45.240.237 to 217.70.177.60, prefix: \"spoof iana-0/8\" \
+(in: eth0 216.34.90.16(00:21:91:fe:a2:6f):68 -> 69.43.85.253(00:07:e1:7c:53:db):67 UDP len:328 ttl:64) \
+Jan 13 17:52:08: ACCEPT service http from 213.121.184.130 to firewall(pub-nic), prefix: \"none\" \
+(in: eth0 213.121.184.130(00:05:2e:6a:a4:14):8504 -> 140.105.63.164(00:60:11:92:ed:1b):80 TCP flags: ****S* len:52 ttl:109)"
+
+re.findall(r"\d+(?:\.\d+){3}", string)
+```
+
+The following is an example of how to create a dictionary of all the 3-mers in a DNA sequence and count the number of times each occurs.
+```{python}
+my_seq = "CAGCCCAATCAGGCTCTACTGCCACTAAACTTACGCAGGATATATTTACGCCGACGTACT"
+
+def three_mers(x):
+    out_dict = {}
+    for i in range(len(x) - 2):
+        if x[i:i+3] in out_dict:
+            out_dict[x[i:i+3]] += 1
+        else:
+            out_dict[x[i:i+3]] = 1
+    return out_dict
+
+print(three_mers(my_seq))
+```
+
+## Example of Using Python and R Together
+
+The following is python code that is creating a dictionary with fruit prices.
+```{python}
+fruit_prices = {
+'apple': 0.65,
+'mango': 1.50,
+'strawberry': '$3/lb',
+'musk melon': 'unavailable'
+}
+```
+
+The following R code can then be used to call the fruit prices.
 ```{R}
 library(reticulate)
-#this is a R code chunk
-py$x
-y<-2
+py$fruit_prices
+```
+
+Therefore, we can see that Python can communicate with R. They can also communicate in the reverse direction as seen below.
+```{R}
+py$fruit_prices$pear=0.75
 ```
 
 ```{python}
-r.y+1 == 3
+fruit_prices['pear']
 ```
+
+
+
+
